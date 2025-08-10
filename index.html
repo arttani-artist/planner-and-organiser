@@ -1,1 +1,694 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>vibe productivity hub</title>
+<style>
+  :root{
+    --bg:#0f0f10;
+    --panel:#171717;
+    --text:#eaeaea;
+    --muted:#bdbdbd;
+    --accent:#00bfa6; 
+    --accent-2:#6ef0cf;
+    --confetti:#ffd166;
+    --card-radius:14px;
+    font-family: Inter, Roboto, Arial, sans-serif;
+  }
+
+  .theme-cottage{ --bg:#fbf6ef; --panel:#fffaf3; --text:#222; --muted:#666; --accent:#b68d58; --accent-2:#e6c6a0; }
+  .theme-goth{ --bg:#0b0b0d; --panel:#0f0f12; --text:#f1e9f7; --muted:#9b90a6; --accent:#8b5cff; --accent-2:#c3a8ff; }
+  .theme-pastel{ --bg:#fffafc; --panel:#fff6fb; --text:#231f2e; --muted:#8b7f8a; --accent:#f7b2c4; --accent-2:#c6b3ff; }
+
+  html,body{height:100%; margin:0; background:var(--bg); color:var(--text);}
+  .app{
+    max-width:1100px;
+    margin:18px auto;
+    padding:18px;
+    display:grid;
+    grid-template-columns: 1fr 1.05fr;
+    gap:18px;
+  }
+  header{
+    grid-column: 1 / -1;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    margin-bottom:6px;
+  }
+  header .title{
+    display:flex;
+    gap:12px;
+    align-items:center;
+  }
+  .logo{
+    width:56px;height:56px;border-radius:12px;
+    background:linear-gradient(135deg,var(--accent),var(--accent-2));
+    display:flex;align-items:center;justify-content:center;font-weight:700;
+    box-shadow:0 6px 18px rgba(0,0,0,.35);
+    color:#fff;font-size:20px;
+  }
+  h1{font-size:20px;margin:0}
+  .streak{
+    font-size:14px;color:var(--muted);
+    display:flex;gap:8px;align-items:center;
+  }
+  .points{
+    background:var(--panel); padding:10px 14px;border-radius:12px;
+    display:flex;gap:10px;align-items:center;
+  }
+  main{
+    display:contents;
+  }
+
+  .left{
+    background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+    padding:14px;border-radius:var(--card-radius); border:1px solid rgba(255,255,255,0.03);
+  }
+
+  .right{
+    background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+    padding:14px;border-radius:var(--card-radius); border:1px solid rgba(255,255,255,0.03);
+    display:flex;flex-direction:column; gap:12px;
+  }
+
+  .panel-title{font-size:14px;margin:0 0 8px 0;color:var(--muted)}
+
+  .mood-row{display:flex;gap:8px;flex-wrap:wrap}
+  .mood-btn{background:transparent;border:1px solid rgba(255,255,255,0.04);padding:8px 12px;border-radius:10px;cursor:pointer;color:var(--text)}
+  .mood-btn.selected{outline:2px solid rgba(255,255,255,0.06); box-shadow:0 6px 12px rgba(0,0,0,.4)}
+  .mood-history{margin-top:12px;padding:10px;background:linear-gradient(180deg, rgba(255,255,255,0.01), transparent);border-radius:10px}
+
+  .todo-input{display:flex;gap:8px}
+  input[type=text], select{
+    padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:var(--text);flex:1;
+  }
+  .todo-list{margin-top:12px;display:flex;flex-direction:column;gap:8px;max-height:300px;overflow:auto;padding-right:6px}
+  .task{
+    background:var(--panel);padding:10px;border-radius:10px;display:flex;align-items:center;gap:10px;
+  }
+  .task .label{flex:1}
+  .task .cat{font-size:12px;color:var(--muted);padding:4px 8px;border-radius:8px;background:rgba(0,0,0,0.06)}
+  .check-btn{width:32px;height:32px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);cursor:pointer;background:transparent}
+
+  .timer{
+    display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.01), transparent)
+  }
+  .time-display{font-size:36px;margin:6px 0}
+  .timer-controls{display:flex;gap:8px;margin-top:8px}
+  .btn{padding:8px 12px;border-radius:10px;border:0;cursor:pointer;background:var(--accent);color:#081414;font-weight:600}
+  .btn.secondary{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--text);font-weight:600}
+
+  .shop{display:flex;gap:8px;align-items:center}
+  .shop .item{background:var(--panel);padding:8px;border-radius:10px;display:flex;flex-direction:column;gap:6px;width:150px}
+  .small{font-size:12px;color:var(--muted)}
+
+  @media (max-width:880px){
+    .app{grid-template-columns:1fr; padding:12px}
+    header{gap:8px}
+  }
+
+  .confetti {
+    position:relative;pointer-events:none;
+  }
+  .confetti .dot{
+    position:absolute;width:8px;height:8px;border-radius:3px;animation:pop .9s ease-out forwards;
+  }
+  @keyframes pop {
+    0% { transform: translateY(0) scale(0.2); opacity:1 }
+    100% { transform: translateY(-90px) translateX(30px) rotate(180deg) scale(1); opacity:0 }
+  }
+</style>
+</head>
+<body>
+  <div id="app" class="">
+    <div class="app" id="appgrid">
+      <header>
+        <div class="title">
+          <div class="logo">v</div>
+          <div>
+            <h1>vibe productivity hub</h1>
+            <div class="streak"><span id="streakText">streak: 0</span></div>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:10px;align-items:center">
+          <div class="points" title="points you can spend">
+            <div style="font-weight:700" id="points">0</div>
+            <div class="small">points</div>
+          </div>
+          <button class="btn secondary" id="openShopBtn">shop</button>
+        </div>
+      </header>
+
+      <main>
+        <section class="left">
+          <div>
+            <p class="panel-title">mood tracker</p>
+            <div class="mood-row" id="moodBtns">
+              <!-- buttons injected by js -->
+            </div>
+
+            <div class="mood-history">
+              <div style="display:flex;justify-content:space-between;align-items:center">
+                <div class="small">mood history (last 14 days)</div>
+                <button id="clearMood" class="btn secondary" style="padding:6px 8px">clear</button>
+              </div>
+              <canvas id="moodCanvas" width="700" height="120" style="width:100%;height:60px;margin-top:8px;border-radius:8px"></canvas>
+            </div>
+          </div>
+
+          <hr style="margin:14px 0;border:0;border-top:1px solid rgba(255,255,255,0.03)">
+
+          <div>
+            <p class="panel-title">daily quick</p>
+            <div style="display:flex;gap:8px;align-items:center">
+              <input type="text" id="quickTask" placeholder="add quick task..." />
+              <select id="quickCat">
+                <option value="school">school</option>
+                <option value="chores">chores</option>
+                <option value="personal">personal</option>
+              </select>
+              <button id="addQuick" class="btn">add</button>
+            </div>
+            <div style="margin-top:10px" id="todoContainer">
+              <div class="todo-list" id="todoList"></div>
+            </div>
+          </div>
+
+        </section>
+
+        <section class="right">
+          <div>
+            <p class="panel-title">pomodoro study timer</p>
+            <div class="timer" id="timerCard">
+              <div class="small">session length (min)</div>
+              <div style="display:flex;gap:8px;margin-top:8px">
+                <input id="workLen" type="number" value="25" min="5" style="width:80px;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.03);background:transparent;color:var(--text)"/>
+                <input id="breakLen" type="number" value="5" min="1" style="width:80px;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.03);background:transparent;color:var(--text)"/>
+              </div>
+
+              <div class="time-display" id="timeDisplay">25:00</div>
+              <div class="timer-controls">
+                <button id="startPause" class="btn">start</button>
+                <button id="skip" class="btn secondary">skip</button>
+                <button id="reset" class="btn secondary">reset</button>
+              </div>
+              <div style="margin-top:8px;color:var(--muted);font-size:13px">mode: <span id="timerMode">work</span></div>
+            </div>
+          </div>
+
+          <div style="display:flex;justify-content:space-between;gap:12px">
+            <div style="flex:1">
+              <p class="panel-title">rewards shop</p>
+              <div class="shop" id="shop">
+                <div class="item">
+                  <div style="font-weight:700">goth theme</div>
+                  <div class="small">cost: 200</div>
+                  <button data-item="goth" class="btn buy">buy</button>
+                </div>
+                <div class="item">
+                  <div style="font-weight:700">pastel theme</div>
+                  <div class="small">cost: 150</div>
+                  <button data-item="pastel" class="btn buy">buy</button>
+                </div>
+                <div class="item">
+                  <div style="font-weight:700">cottage theme</div>
+                  <div class="small">cost: 100</div>
+                  <button data-item="cottage" class="btn buy">buy</button>
+                </div>
+              </div>
+            </div>
+
+            <div style="width:220px">
+              <p class="panel-title">profile</p>
+              <div style="background:var(--panel);padding:12px;border-radius:10px">
+                <div style="font-weight:700" id="profileName">you</div>
+                <div class="small" style="margin-top:6px">stickers unlocked:</div>
+                <div id="stickers" style="display:flex;gap:6px;margin-top:8px">
+                  <!-- little sticker placeholders -->
+                </div>
+                <div style="margin-top:10px">
+                  <button id="useTheme" class="btn secondary">apply unlocked theme</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </section>
+
+      </main>
+    </div>
+  </div>
+
+<script>
+/*
+  features:
+   - mood tracker (14-day history, canvas chart, localStorage)
+   - todo list with categories (localStorage, points for completing)
+   - pomodoro timer (work/break, adjustable, points for full sessions)
+   - simple shop unlocking themes (spend points)
+   - streak: log mood + complete a task each day keeps streak
+*/
+
+const MOODS = [
+  {id:5, emoji:'😄', label:'great'},
+  {id:4, emoji:'🙂', label:'good'},
+  {id:3, emoji:'😐', label:'meh'},
+  {id:2, emoji:'😕', label:'down'},
+  {id:1, emoji:'😫', label:'awful'},
+  {id:0, emoji:'🫥', label:'numb'}
+];
+
+const DEFAULTS = {
+  points: 0,
+  streak: 0,
+  lastStreakDate: null,
+  moods: [], // {date: 'YYYY-MM-DD', moodId: n}
+  todos: [], // {id, text, cat, done, created}
+  shop: { goth:false, pastel:false, cottage:false },
+  appliedTheme: null
+};
+
+// storage helpers
+function load(){ return JSON.parse(localStorage.getItem('vibe_data')||'null') || DEFAULTS; }
+function save(state){ localStorage.setItem('vibe_data', JSON.stringify(state)); }
+
+// app state
+let state = load();
+
+// dom refs
+const moodBtns = document.getElementById('moodBtns');
+const moodCanvas = document.getElementById('moodCanvas');
+const todoList = document.getElementById('todoList');
+const pointsEl = document.getElementById('points');
+const streakText = document.getElementById('streakText');
+const quickTask = document.getElementById('quickTask');
+const quickCat = document.getElementById('quickCat');
+const addQuick = document.getElementById('addQuick');
+const workLen = document.getElementById('workLen');
+const breakLen = document.getElementById('breakLen');
+const timeDisplay = document.getElementById('timeDisplay');
+const startPause = document.getElementById('startPause');
+const skipBtn = document.getElementById('skip');
+const resetBtn = document.getElementById('reset');
+const timerMode = document.getElementById('timerMode');
+const buyBtns = document.querySelectorAll('.buy');
+const openShopBtn = document.getElementById('openShopBtn');
+const useThemeBtn = document.getElementById('useTheme');
+const stickersEl = document.getElementById('stickers');
+const clearMoodBtn = document.getElementById('clearMood');
+
+function formatDate(d){ return d.toISOString().slice(0,10); }
+
+// init ui
+function init(){
+  renderMoodButtons();
+  renderMoodCanvas();
+  renderTodos();
+  updateProfileUI();
+  updatePointsUI();
+  updateStreakUI();
+  applyTheme(state.appliedTheme);
+}
+init();
+
+function renderMoodButtons(){
+  moodBtns.innerHTML = '';
+  MOODS.forEach(m=>{
+    const btn = document.createElement('button');
+    btn.className = 'mood-btn';
+    btn.innerHTML = `${m.emoji} <span style="margin-left:8px;font-size:13px;color:var(--muted)">${m.label}</span>`;
+    btn.onclick = ()=> logMood(m.id);
+    moodBtns.appendChild(btn);
+  });
+}
+
+function logMood(moodId){
+  const today = formatDate(new Date());
+  // remove existing for today
+  state.moods = state.moods.filter(m=>m.date!==today);
+  state.moods.push({date:today, moodId});
+  // trim to last 30
+  if(state.moods.length>60) state.moods.splice(0,state.moods.length-60);
+  save(state);
+  renderMoodCanvas();
+  // streak logic: if user logs mood and has completed a task today, keep streak. we'll update when task is completed.
+  updateStreakOnMood(today);
+}
+
+function renderMoodCanvas(){
+  const canvas = moodCanvas;
+  const ctx = canvas.getContext('2d');
+  // draw last 14 days
+  const days = 14;
+  const arr = [];
+  const today = new Date();
+  for(let i=days-1;i>=0;i--){
+    const d = new Date(today); d.setDate(today.getDate()-i);
+    const key = formatDate(d);
+    const found = state.moods.find(m=>m.date===key);
+    arr.push(found ? found.moodId : null);
+  }
+  // clear
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  const w = canvas.width;
+  const h = canvas.height;
+  const pad = 10;
+  const cellW = (w - pad*2) / days;
+  // background bars
+  for(let i=0;i<days;i++){
+    const val = arr[i];
+    const x = pad + i*cellW;
+    const barH = val ? ( (val/5) * (h - pad*2) ) : 6;
+    ctx.fillStyle = val ? 'rgba(0,191,166,0.9)' : 'rgba(255,255,255,0.04)';
+    ctx.fillRect(x+6, h - pad - barH, cellW - 12, barH);
+  }
+  // little dots for moods
+  for(let i=0;i<days;i++){
+    const val = arr[i];
+    const x = pad + i*cellW + cellW/2;
+    if(val){
+      const y = h - pad - (val/5)*(h - pad*2) - 8;
+      ctx.beginPath();
+      ctx.arc(x,y,6,0,Math.PI*2);
+      ctx.fillStyle = 'var(--accent)';
+      ctx.fill();
+    }
+  }
+}
+
+clearMoodBtn.onclick = ()=>{
+  if(!confirm('clear mood history?')) return;
+  state.moods = [];
+  save(state);
+  renderMoodCanvas();
+};
+
+function renderTodos(){
+  todoList.innerHTML = '';
+  state.todos.sort((a,b)=> b.created - a.created);
+  for(const t of state.todos){
+    const el = document.createElement('div');
+    el.className = 'task';
+    el.innerHTML = `
+      <button class="check-btn">${t.done ? '✓' : ''}</button>
+      <div class="label">
+        <div style="font-weight:700; color:${t.done ? 'var(--muted)' : 'var(--text)'}">${escapeHtml(t.text)}</div>
+        <div class="cat">${escapeHtml(t.cat)}</div>
+      </div>
+      <div style="display:flex;gap:6px">
+        <button class="btn secondary edit">edit</button>
+        <button class="btn secondary del">del</button>
+      </div>
+    `;
+    // hook buttons
+    el.querySelector('.check-btn').onclick = ()=>{
+      toggleTaskDone(t.id, el);
+    };
+    el.querySelector('.del').onclick = ()=> {
+      if(!confirm('delete task?')) return;
+      state.todos = state.todos.filter(x=>x.id!==t.id);
+      save(state); renderTodos();
+    };
+    el.querySelector('.edit').onclick = ()=>{
+      const newText = prompt('edit task text', t.text);
+      if(newText!==null){
+        t.text = newText.trim() || t.text;
+        save(state); renderTodos();
+      }
+    };
+    todoList.appendChild(el);
+  }
+}
+
+function addTask(text, cat='personal'){
+  const id = Math.random().toString(36).slice(2,9);
+  const task = {id, text, cat, done:false, created:Date.now()};
+  state.todos.push(task);
+  save(state);
+  renderTodos();
+}
+
+addQuick.onclick = ()=>{
+  const txt = quickTask.value.trim();
+  if(!txt) return;
+  addTask(txt, quickCat.value);
+  quickTask.value = '';
+};
+
+function toggleTaskDone(id, el){
+  const t = state.todos.find(x=>x.id===id);
+  if(!t) return;
+  t.done = !t.done;
+  if(t.done){
+    // award points
+    addPoints(12); // completing a task gives 12 points
+    // show confetti
+    spawnConfetti(el);
+    // check streak: if mood logged today and we completed a task today, bump streak
+    const today = formatDate(new Date());
+    if(state.moods.find(m=>m.date===today)) {
+      updateStreakOnTask(today);
+    }
+  }
+  save(state);
+  renderTodos();
+}
+
+function addPoints(n){
+  state.points = (state.points||0) + n;
+  save(state);
+  updatePointsUI();
+}
+
+function updatePointsUI(){
+  pointsEl.textContent = state.points || 0;
+}
+
+buyBtns.forEach(b=>{
+  b.onclick = ()=>{
+    const item = b.dataset.item;
+    const cost = item==='goth' ? 200 : (item==='pastel' ? 150 : 100);
+    if(state.shop[item]){
+      alert('already bought!');
+      return;
+    }
+    if(state.points < cost){
+      alert('not enough points yet!');
+      return;
+    }
+    state.points -= cost;
+    state.shop[item] = true;
+    // set applied theme to purchased one automatically
+    state.appliedTheme = item;
+    save(state);
+    updatePointsUI();
+    applyTheme(item);
+    updateProfileUI();
+    alert('bought! theme unlocked and applied');
+  };
+});
+
+openShopBtn.onclick = ()=> {
+  // scroll to shop area
+  document.getElementById('shop').scrollIntoView({behavior:'smooth', block:'center'});
+};
+
+useThemeBtn.onclick = ()=>{
+  // choose any unlocked theme and apply
+  const unlocked = Object.keys(state.shop).filter(k=>state.shop[k]);
+  if(!unlocked.length){ alert('no themes unlocked yet'); return; }
+  const pick = unlocked[0];
+  state.appliedTheme = pick;
+  save(state);
+  applyTheme(pick);
+  alert('applied: ' + pick);
+};
+
+function updateProfileUI(){
+  // stickers: simple visual for how many shop items bought
+  stickersEl.innerHTML = '';
+  const keys = Object.keys(state.shop);
+  keys.forEach(k=>{
+    if(state.shop[k]){
+      const s = document.createElement('div');
+      s.style.width='28px';s.style.height='28px';s.style.borderRadius='6px';
+      s.style.background='linear-gradient(135deg,var(--accent),var(--accent-2))';
+      s.title = k + ' theme';
+      stickersEl.appendChild(s);
+    }
+  });
+}
+
+let timer = {
+  running:false,
+  mode:'work', // 'work' | 'break'
+  remain: null,
+  intervalId: null
+};
+
+function setTimerMinutes(mins){
+  timer.remain = mins * 60;
+  renderTimerDisplay();
+}
+
+function renderTimerDisplay(){
+  const mm = Math.floor(timer.remain/60).toString().padStart(2,'0');
+  const ss = (timer.remain%60).toString().padStart(2,'0');
+  timeDisplay.textContent = `${mm}:${ss}`;
+  timerMode.textContent = timer.mode;
+}
+
+function startTimer(){
+  if(timer.running) return;
+  if(timer.remain===null) setTimerMinutes(parseInt(workLen.value,10)||25);
+  timer.running = true;
+  startPause.textContent = 'pause';
+  timer.intervalId = setInterval(()=>{
+    timer.remain--;
+    if(timer.remain<=0){
+      // finished
+      clearInterval(timer.intervalId);
+      timer.running=false;
+      startPause.textContent='start';
+      // award points for completing a session (work only)
+      if(timer.mode==='work') {
+        addPoints(25);
+        alert('nice! you finished a work session and earned 25 points');
+      }
+      // switch mode
+      if(timer.mode==='work'){ timer.mode='break'; setTimerMinutes(parseInt(breakLen.value,10)||5); }
+      else { timer.mode='work'; setTimerMinutes(parseInt(workLen.value,10)||25); }
+      renderTimerDisplay();
+    } else {
+      renderTimerDisplay();
+    }
+  },1000);
+}
+
+function pauseTimer(){
+  if(!timer.running) return;
+  clearInterval(timer.intervalId);
+  timer.running=false;
+  startPause.textContent='start';
+}
+
+startPause.onclick = ()=>{
+  if(timer.running){ pauseTimer(); } else { startTimer(); }
+};
+
+skipBtn.onclick = ()=>{
+  // skip to next mode
+  if(timer.intervalId) clearInterval(timer.intervalId);
+  timer.running=false;
+  if(timer.mode==='work'){ timer.mode='break'; setTimerMinutes(parseInt(breakLen.value,10)||5); }
+  else { timer.mode='work'; setTimerMinutes(parseInt(workLen.value,10)||25); }
+  renderTimerDisplay();
+};
+
+resetBtn.onclick = ()=>{
+  if(timer.intervalId) clearInterval(timer.intervalId);
+  timer.running=false;
+  timer.mode='work';
+  setTimerMinutes(parseInt(workLen.value,10)||25);
+  startPause.textContent='start';
+};
+
+setTimerMinutes(parseInt(workLen.value,10)||25);
+
+function escapeHtml(s){
+  return (s+'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function spawnConfetti(el){
+  const conf = document.createElement('div');
+  conf.className='confetti';
+  conf.style.width='1px'; conf.style.height='1px';
+  el.appendChild(conf);
+  for(let i=0;i<6;i++){
+    const d = document.createElement('div');
+    d.className='dot';
+    d.style.left = (Math.random()*40) + 'px';
+    d.style.top = (Math.random()*10) + 'px';
+    d.style.background = ['#ffd166','#06d6a0','#ef476f','#118ab2','#ffb4a2'][Math.floor(Math.random()*5)];
+    conf.appendChild(d);
+  }
+  setTimeout(()=> conf.remove(), 900);
+}
+
+function updateStreakOnMood(today){
+  // if user logged mood today and already completed a task today, keep streak active (do nothing)
+  // if no prior streak day or lastStreakDate isn't yesterday, start a new potential streak (we only confirm when both mood+task happen)
+  // we'll track lastStreakDate if user completes both actions same day
+  // this function ensures a streak placeholder exists
+  if(!state.lastStreakDate) state.lastStreakDate = null;
+  save(state);
+  updateStreakUI();
+}
+
+function updateStreakOnTask(today){
+  // called on completing a task: if mood logged today then we confirm streak increment/refresh
+  if(!state.moods.find(m=>m.date===today)) return;
+  const last = state.lastStreakDate;
+  if(last===null){
+    state.streak = 1;
+  } else {
+    // if last is yesterday, increment, else reset to 1
+    const lastDate = new Date(last);
+    const expected = new Date(today); expected.setDate(expected.getDate()-1);
+    const expectedStr = formatDate(expected);
+    if(formatDate(lastDate) === expectedStr) state.streak = (state.streak||0) + 1;
+    else state.streak = 1;
+  }
+  state.lastStreakDate = today;
+  // reward small bonus for keeping streak
+  addPoints(10);
+  save(state);
+  updateStreakUI();
+}
+
+function updateStreakUI(){
+  streakText.textContent = 'streak: ' + (state.streak || 0);
+}
+
+function applyTheme(name){
+  // remove existing theme classes from body
+  document.documentElement.classList.remove('theme-goth','theme-cottage','theme-pastel');
+  if(!name) return;
+  if(name==='goth') document.documentElement.classList.add('theme-goth');
+  if(name==='cottage') document.documentElement.classList.add('theme-cottage');
+  if(name==='pastel') document.documentElement.classList.add('theme-pastel');
+}
+
+(function loadFromStorage(){
+  // ensure keys exist
+  if(typeof state.points === 'undefined') state.points = 0;
+  if(!Array.isArray(state.todos)) state.todos = [];
+  if(!state.shop) state.shop = {goth:false,pastel:false,cottage:false};
+  save(state);
+})();
+
+document.addEventListener('keydown', (e)=>{
+  if(e.key==='Enter' && document.activeElement===quickTask) { addQuick.click(); }
+});
+
+if(state.appliedTheme) applyTheme(state.appliedTheme);
+
+/* expose simple reset button for dev in console
+   window.vibe_reset = ()=>{ localStorage.removeItem('vibe_data'); location.reload() };
+*/
+
+if(state.todos.length===0){
+  addTask('finish algebra worksheet','school');
+  addTask('practice serve for 20 min','personal');
+}
+
+window.addEventListener('beforeunload', ()=> save(state));
+
+</script>
+</body>
+</html>
 
