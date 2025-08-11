@@ -4,37 +4,115 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Vibe Productivity Hub</title>
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600&display=swap" rel="stylesheet">
 <style>
-/* layout grid for desktop */
-body.desktop .container { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-/* stacked layout for mobile */
-body.mobile .container { display: block; }
-
-/* base styles */
-body { font-family: Arial, sans-serif; margin: 0; background: var(--bg); color: var(--text); transition: background 0.3s, color 0.3s; }
-header, footer { padding: 1rem; text-align: center; background: var(--accent); color: #fff; }
-section { background: rgba(255,255,255,0.1); padding: 1rem; border-radius: 8px; margin-bottom: 1rem; }
-button { padding: 0.5rem 1rem; border: none; border-radius: 6px; background: var(--accent); color: #fff; cursor: pointer; }
-input, select { padding: 0.5rem; margin: 0.25rem 0; width: 100%; }
-
-/* theme variables */
-:root {
- --bg: #fafafa; --text: #333; --accent: #f7b2c4;
+body {
+ font-family: 'Quicksand', sans-serif;
+ margin: 0;
+ background: var(--bg);
+ color: var(--text);
+ transition: background 0.4s ease, color 0.4s ease;
 }
-body.theme-dark { --bg: #121212; --text: #eee; --accent: #00bfa6; }
-body.theme-galaxy { --bg: #1a0933; --text: #f5e1ff; --accent: #c77dff; }
-body.theme-matcha { --bg: #f1f8f4; --text: #2b4734; --accent: #97cba9; }
-body.theme-sunset { --bg: linear-gradient(180deg, #ff9a8b, #ff6a88, #ff99ac); --text: #fff; --accent: #ffb347; }
-body.theme-matrix { --bg: #000; --text: #00ff00; --accent: #004400; }
-body.theme-cafe { --bg: #f3e5d8; --text: #4e342e; --accent: #a1887f; }
-
-/* responsive tweaks */
+header, footer {
+ padding: 1rem;
+ text-align: center;
+ background: var(--accent);
+ color: #fff;
+ border-radius: 20px;
+ box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+ margin: 1rem;
+}
+.container {
+ display: grid;
+ grid-template-columns: 1fr 1fr;
+ gap: 1rem;
+ margin: 1rem;
+}
+section {
+ background: rgba(255,255,255,0.05);
+ padding: 1.5rem;
+ border-radius: 20px;
+ box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+ backdrop-filter: blur(6px);
+}
+button {
+ padding: 0.5rem 1rem;
+ border: none;
+ border-radius: 15px;
+ background: var(--accent);
+ color: #fff;
+ cursor: pointer;
+ font-weight: 600;
+ transition: transform 0.2s ease, background 0.3s ease;
+}
+button:hover {
+ transform: scale(1.05);
+ background: var(--accent-hover);
+}
+input, select {
+ padding: 0.5rem;
+ margin: 0.25rem 0;
+ width: 100%;
+ border-radius: 12px;
+ border: none;
+ outline: none;
+ background: rgba(255,255,255,0.1);
+ color: var(--text);
+}
+ul { list-style: none; padding: 0; }
+ul li {
+ background: rgba(255,255,255,0.08);
+ padding: 0.5rem;
+ margin-top: 0.5rem;
+ border-radius: 12px;
+ cursor: pointer;
+ transition: background 0.2s ease;
+}
+ul li:hover {
+ background: rgba(255,255,255,0.2);
+}
+:root {
+ --bg: linear-gradient(135deg, #0d0d1a, #1b0f2e);
+ --text: #f5eaff;
+ --accent: #8e6fcb;
+ --accent-hover: #a987ff;
+}
+body.theme-galaxy {
+ --bg: linear-gradient(135deg, #1a0933, #0b0014);
+ --text: #f5e1ff;
+ --accent: #c77dff;
+ --accent-hover: #e3a7ff;
+}
+body.theme-matcha {
+ --bg: linear-gradient(135deg, #162d1f, #0f1e15);
+ --text: #d6f0e1;
+ --accent: #97cba9;
+ --accent-hover: #b8e4c4;
+}
+body.theme-sunset {
+ --bg: linear-gradient(135deg, #2c0b0b, #4a1f1f);
+ --text: #ffe9e3;
+ --accent: #ff6a88;
+ --accent-hover: #ff8fa3;
+}
+body.theme-matrix {
+ --bg: #000;
+ --text: #00ff00;
+ --accent: #004400;
+ --accent-hover: #007700;
+}
+body.theme-cafe {
+ --bg: linear-gradient(135deg, #2f1b0c, #1b1006);
+ --text: #f3e5d8;
+ --accent: #a1887f;
+ --accent-hover: #c2a999;
+}
 @media (max-width: 600px) {
- body.desktop .container { display: block; }
+ .container { grid-template-columns: 1fr; }
 }
 </style>
 </head>
-<body class="desktop theme-dark">
+<body class="desktop">
 <header>
  <h1>Vibe Productivity Hub</h1>
  <button onclick="switchMode()">Switch to Mobile View</button>
@@ -75,14 +153,13 @@ body.theme-cafe { --bg: #f3e5d8; --text: #4e342e; --accent: #a1887f; }
  <p>Points: <span id="points">0</span></p>
 </section>
 </div>
-<footer>made for vibes only ✨</footer>
+<footer>made for the night owls 🌙</footer>
 <script>
 let deviceMode = 'desktop';
-let themes = ['theme-dark','theme-galaxy','theme-matcha','theme-sunset','theme-matrix','theme-cafe'];
+let themes = ['theme-galaxy','theme-matcha','theme-sunset','theme-matrix','theme-cafe'];
 let themeIndex = 0;
 let points = 0;
 let timerInterval, timerSeconds;
-
 function switchMode(){
  deviceMode = (deviceMode==='desktop')?'mobile':'desktop';
  document.body.classList.remove('desktop','mobile');
