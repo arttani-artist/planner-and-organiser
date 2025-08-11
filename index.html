@@ -103,68 +103,167 @@
   .shop .item{background:var(--panel);padding:8px;border-radius:10px;display:flex;flex-direction:column;gap:6px;width:130px}
   .small{font-size:12px;color:var(--muted)}
 
-  /* Calendar styles */
-  .calendar-container{
-    background:linear-gradient(180deg, rgba(255,255,255,0.01), transparent);
-    border-radius:10px;padding:12px;
-  }
-  .calendar-header{
-    display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;
-  }
-  .calendar-nav{
-    background:transparent;border:1px solid rgba(255,255,255,0.06);
-    padding:6px 10px;border-radius:8px;cursor:pointer;color:var(--text);
-    font-size:16px;font-weight:600;
-  }
-  .calendar-nav:hover{
-    background:rgba(255,255,255,0.05);
-  }
-  .calendar-grid{
-    display:grid;grid-template-columns:repeat(7,1fr);gap:2px;
-  }
-  .calendar-day-header{
-    text-align:center;padding:6px;font-size:11px;color:var(--muted);font-weight:600;
-  }
-  .calendar-day{
-    aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
-    border-radius:6px;cursor:pointer;position:relative;min-height:40px;
-    transition:background-color 0.2s ease;
-  }
-  .calendar-day:hover{background:rgba(255,255,255,0.03)}
-  .calendar-day.today{background:var(--accent);color:#fff}
-  .calendar-day.other-month{color:var(--muted);opacity:0.4}
-  .calendar-day.has-events{border:2px solid var(--accent-2)}
-  .calendar-day.has-events.today{border:2px solid #fff}
-  .day-number{font-size:12px;font-weight:600}
-  .event-dot{width:4px;height:4px;border-radius:50%;background:var(--accent-2);margin-top:2px}
+  <!-- calendar container -->
+<div id="calendar"></div>
 
-  .event-form{
-    margin-top:12px;padding:12px;background:var(--panel);border-radius:10px;
-  }
-  .form-row{display:flex;gap:8px;margin-bottom:8px}
-  .form-row input, .form-row select{flex:1}
+<!-- modal -->
+<div id="eventModal" class="modal hidden">
+  <div class="modal-content">
+    <span class="close">&times;</span>
+    <h2 id="modalDate"></h2>
+    <input type="text" id="eventTitle" placeholder="event/task title">
+    <textarea id="eventDesc" placeholder="details..."></textarea>
+    <button id="saveEvent">save</button>
+    <div id="eventList"></div>
+  </div>
+</div>
 
-  .events-list{
-    margin-top:12px;max-height:200px;overflow:auto;
-  }
-  .event-item{
-    background:var(--panel);padding:8px 12px;border-radius:8px;margin-bottom:6px;
-    display:flex;justify-content:space-between;align-items:center;
-  }
-  .event-details{flex:1}
-  .event-title{font-weight:600;font-size:13px}
-  .event-time{font-size:11px;color:var(--muted)}
-  .event-actions{display:flex;gap:4px}
-  .event-actions button{padding:4px 6px;font-size:10px}
+<style>
+/* calendar */
+#calendar {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+  background: rgba(255,255,255,0.05);
+  padding: 10px;
+  border-radius: 12px;
+}
+.calendar-day {
+  padding: 10px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 8px;
+  text-align: center;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+.calendar-day:hover {
+  background: rgba(255,255,255,0.15);
+}
 
-  @media (max-width:1200px){
-    .app{grid-template-columns:1fr 1fr; padding:12px}
-    .middle{grid-column:1 / -1}
+/* modal */
+.modal {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: rgba(0,0,0,0.6);
+  z-index: 999;
+}
+.modal.hidden { display: none; }
+.modal-content {
+  background: #1a1a1a;
+  padding: 20px;
+  border-radius: 12px;
+  width: 300px;
+  color: #eee;
+  box-shadow: 0 0 20px rgba(0,0,0,0.5);
+}
+.modal-content input,
+.modal-content textarea {
+  width: 100%;
+  background: #0e0e0e;
+  border: none;
+  padding: 8px;
+  margin: 6px 0;
+  border-radius: 6px;
+  color: #eee;
+}
+.modal-content button {
+  background: #4a4a4a;
+  border: none;
+  padding: 8px 12px;
+  color: white;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.close {
+  float: right;
+  cursor: pointer;
+}
+</style>
+
+<script>
+const calendar = document.getElementById('calendar');
+const modal = document.getElementById('eventModal');
+const modalDate = document.getElementById('modalDate');
+const closeModal = document.querySelector('.close');
+const saveEventBtn = document.getElementById('saveEvent');
+const eventTitle = document.getElementById('eventTitle');
+const eventDesc = document.getElementById('eventDesc');
+const eventList = document.getElementById('eventList');
+
+let selectedDate = '';
+let events = JSON.parse(localStorage.getItem('calendarEvents')) || {};
+
+function renderCalendar() {
+  const now = new Date();
+  const month = now.getMonth();
+  const year = now.getFullYear();
+  const firstDay = new Date(year, month, 1).getDay();
+  const lastDate = new Date(year, month + 1, 0).getDate();
+
+  calendar.innerHTML = '';
+  for (let i = 0; i < firstDay; i++) {
+    const empty = document.createElement('div');
+    calendar.appendChild(empty);
   }
-  @media (max-width:880px){
-    .app{grid-template-columns:1fr; padding:12px}
-    header{gap:8px}
+
+  for (let day = 1; day <= lastDate; day++) {
+    const dayEl = document.createElement('div');
+    dayEl.classList.add('calendar-day');
+    dayEl.textContent = day;
+    dayEl.addEventListener('click', () => openModal(`${year}-${month+1}-${day}`));
+    calendar.appendChild(dayEl);
   }
+}
+
+function openModal(date) {
+  selectedDate = date;
+  modalDate.textContent = new Date(date).toDateString();
+  eventTitle.value = '';
+  eventDesc.value = '';
+  renderEventList();
+  modal.classList.remove('hidden');
+}
+
+function closeModalFn() {
+  modal.classList.add('hidden');
+}
+
+function saveEvent() {
+  if (!events[selectedDate]) events[selectedDate] = [];
+  events[selectedDate].push({
+    title: eventTitle.value,
+    desc: eventDesc.value
+  });
+  localStorage.setItem('calendarEvents', JSON.stringify(events));
+  renderEventList();
+  eventTitle.value = '';
+  eventDesc.value = '';
+}
+
+function renderEventList() {
+  eventList.innerHTML = '';
+  if (events[selectedDate]) {
+    events[selectedDate].forEach(ev => {
+      const evDiv = document.createElement('div');
+      evDiv.innerHTML = `<strong>${ev.title}</strong><p>${ev.desc}</p>`;
+      evDiv.style.marginTop = '8px';
+      evDiv.style.padding = '6px';
+      evDiv.style.background = 'rgba(255,255,255,0.05)';
+      evDiv.style.borderRadius = '6px';
+      eventList.appendChild(evDiv);
+    });
+  }
+}
+
+closeModal.addEventListener('click', closeModalFn);
+saveEventBtn.addEventListener('click', saveEvent);
+
+renderCalendar();
+</script>
+
 
   .confetti {
     position:relative;pointer-events:none;
@@ -175,7 +274,7 @@
   @keyframes pop {
     0% { transform: translateY(0) scale(0.2); opacity:1 }
     100% { transform: translateY(-90px) translateX(30px) rotate(180deg) scale(1); opacity:0 }
-  }
+  } 
 </style>
 </head>
 <body>
