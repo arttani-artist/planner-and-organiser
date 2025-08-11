@@ -254,9 +254,10 @@
 */
 
 const MOODS = [
-  {id:5, emoji:'😄', label:'great'},
-  {id:4, emoji:'🙂', label:'good'},
-  {id:3, emoji:'😐', label:'meh'},
+  {id:6, emoji:'😄', label:'great'},
+  {id:5, emoji:'🙂', label:'good'},
+  {id:4, emoji:'😐', label:'meh'},
+  {id:3, emoji:'😡', label:'angry'},
   {id:2, emoji:'😕', label:'down'},
   {id:1, emoji:'😫', label:'awful'},
   {id:0, emoji:'🫥', label:'numb'}
@@ -681,11 +682,12 @@ if(state.appliedTheme) applyTheme(state.appliedTheme);
    window.vibe_reset = ()=>{ localStorage.removeItem('vibe_data'); location.reload() };
 */
 
+/*
 if(state.todos.length===0){
   addTask('finish algebra worksheet','school');
   addTask('practice serve for 20 min','personal');
 }
-
+*/
 window.addEventListener('beforeunload', ()=> save(state));
 
 </script>
