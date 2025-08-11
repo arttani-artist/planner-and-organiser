@@ -204,7 +204,7 @@
         <div class="title">
           <div class="logo">v</div>
           <div>
-            <h1>vibe productivity hub</h1>
+            <h1>be productive!!</h1>
             <div class="streak"><span id="streakText">streak: 0</span></div>
           </div>
         </div>
@@ -1043,77 +1043,6 @@ function renderUpcomingEvents(){
     };
   });
 }
-<!-- buttons -->
-<div class="top-controls">
-  <button id="themeToggle">switch theme</button>
-  <button id="mobileToggle">mobile mode</button>
-</div>
-
-<style>
-  /* top control buttons styling */
-  .top-controls {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    margin-bottom: 10px;
-  }
-  .top-controls button {
-    background: var(--accent);
-    color: var(--text);
-    border: none;
-    padding: 6px 10px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 0.9em;
-  }
-  .mobile-mode .sidebar,
-  .mobile-mode .widget-panel {
-    display: none;
-  }
-  .mobile-mode .main {
-    width: 100%;
-    padding: 10px;
-  }
-</style>
-
-<script>
-  const themes = ["dark-dreamy", "original", "alt-theme"]; // replace with actual class names or ids you use
-  let currentThemeIndex = 0;
-
-  // load saved preferences
-  window.addEventListener("DOMContentLoaded", () => {
-    const savedTheme = localStorage.getItem("theme");
-    const savedMobile = localStorage.getItem("mobileMode");
-
-    if (savedTheme && themes.includes(savedTheme)) {
-      document.body.classList.add(savedTheme);
-      currentThemeIndex = themes.indexOf(savedTheme);
-    } else {
-      document.body.classList.add(themes[0]);
-    }
-
-    if (savedMobile === "true") {
-      document.body.classList.add("mobile-mode");
-    }
-  });
-
-  // theme toggle
-  document.getElementById("themeToggle").addEventListener("click", () => {
-    document.body.classList.remove(themes[currentThemeIndex]);
-    currentThemeIndex = (currentThemeIndex + 1) % themes.length;
-    document.body.classList.add(themes[currentThemeIndex]);
-    localStorage.setItem("theme", themes[currentThemeIndex]);
-  });
-
-  // mobile toggle
-  document.getElementById("mobileToggle").addEventListener("click", () => {
-    document.body.classList.toggle("mobile-mode");
-    localStorage.setItem(
-      "mobileMode",
-      document.body.classList.contains("mobile-mode")
-    );
-  });
-</script>
 
 // ----- misc helpers -----
 (function ensureState(){
