@@ -10,7 +10,7 @@
     --panel:#171717;
     --text:#eaeaea;
     --muted:#bdbdbd;
-    --accent:#00bfa6; 
+    --accent:#00bfa6;
     --accent-2:#6ef0cf;
     --confetti:#ffd166;
     --card-radius:14px;
@@ -77,7 +77,7 @@
   .mood-history{margin-top:12px;padding:10px;background:linear-gradient(180deg, rgba(255,255,255,0.01), transparent);border-radius:10px}
 
   .todo-input{display:flex;gap:8px}
-  input[type=text], input[type=time], select{
+  input[type=text], input[type=time], select, textarea{
     padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:var(--text);flex:1;
   }
   input[type=number]{
@@ -103,169 +103,98 @@
   .shop .item{background:var(--panel);padding:8px;border-radius:10px;display:flex;flex-direction:column;gap:6px;width:130px}
   .small{font-size:12px;color:var(--muted)}
 
-  <!-- calendar container -->
-<div id="calendar"></div>
+  /* Calendar styles (keeps your aesthetic, grid in calendar-grid) */
+  .calendar-container{
+    background:linear-gradient(180deg, rgba(255,255,255,0.01), transparent);
+    border-radius:10px;padding:12px;
+  }
+  .calendar-header{
+    display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;
+  }
+  .calendar-nav{
+    background:transparent;border:1px solid rgba(255,255,255,0.06);
+    padding:6px 10px;border-radius:8px;cursor:pointer;color:var(--text);
+    font-size:16px;font-weight:600;
+  }
+  .calendar-nav:hover{
+    background:rgba(255,255,255,0.05);
+  }
+  .calendar-grid{
+    display:grid;grid-template-columns:repeat(7,1fr);gap:6px;
+  }
+  .calendar-day-header{
+    text-align:center;padding:6px;font-size:11px;color:var(--muted);font-weight:600;
+  }
+  .calendar-day{
+    aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:8px;
+    border-radius:10px;cursor:pointer;position:relative;min-height:68px;
+    transition:background-color 0.15s ease, transform 0.08s ease;
+    background: linear-gradient(180deg, rgba(255,255,255,0.01), transparent);
+    border:1px solid rgba(255,255,255,0.02);
+  }
+  .calendar-day:hover{ transform: translateY(-4px); background: rgba(255,255,255,0.03) }
+  .calendar-day.today{background:var(--accent);color:#071413}
+  .calendar-day.other-month{color:var(--muted);opacity:0.45}
+  .calendar-day.has-events{box-shadow: 0 0 0 2px rgba(110,240,207,0.08) inset;}
+  .day-number{font-size:12px;font-weight:700}
+  .event-dot{width:6px;height:6px;border-radius:50%;background:var(--accent-2);margin-top:6px}
 
-<!-- modal -->
-<div id="eventModal" class="modal hidden">
-  <div class="modal-content">
-    <span class="close">&times;</span>
-    <h2 id="modalDate"></h2>
-    <input type="text" id="eventTitle" placeholder="event/task title">
-    <textarea id="eventDesc" placeholder="details..."></textarea>
-    <button id="saveEvent">save</button>
-    <div id="eventList"></div>
-  </div>
-</div>
-
-<style>
-/* calendar */
-#calendar {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 6px;
-  background: rgba(255,255,255,0.05);
-  padding: 10px;
-  border-radius: 12px;
-}
-.calendar-day {
-  padding: 10px;
-  background: rgba(255,255,255,0.08);
-  border-radius: 8px;
-  text-align: center;
-  cursor: pointer;
-  transition: background 0.2s ease;
-}
-.calendar-day:hover {
-  background: rgba(255,255,255,0.15);
-}
-
-/* modal */
-.modal {
-  position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background: rgba(0,0,0,0.6);
-  z-index: 999;
-}
-.modal.hidden { display: none; }
-.modal-content {
-  background: #1a1a1a;
-  padding: 20px;
-  border-radius: 12px;
-  width: 300px;
-  color: #eee;
-  box-shadow: 0 0 20px rgba(0,0,0,0.5);
-}
-.modal-content input,
-.modal-content textarea {
-  width: 100%;
-  background: #0e0e0e;
-  border: none;
-  padding: 8px;
-  margin: 6px 0;
-  border-radius: 6px;
-  color: #eee;
-}
-.modal-content button {
-  background: #4a4a4a;
-  border: none;
-  padding: 8px 12px;
-  color: white;
-  border-radius: 6px;
-  cursor: pointer;
-}
-.close {
-  float: right;
-  cursor: pointer;
-}
-</style>
-
-<script>
-const calendar = document.getElementById('calendar');
-const modal = document.getElementById('eventModal');
-const modalDate = document.getElementById('modalDate');
-const closeModal = document.querySelector('.close');
-const saveEventBtn = document.getElementById('saveEvent');
-const eventTitle = document.getElementById('eventTitle');
-const eventDesc = document.getElementById('eventDesc');
-const eventList = document.getElementById('eventList');
-
-let selectedDate = '';
-let events = JSON.parse(localStorage.getItem('calendarEvents')) || {};
-
-function renderCalendar() {
-  const now = new Date();
-  const month = now.getMonth();
-  const year = now.getFullYear();
-  const firstDay = new Date(year, month, 1).getDay();
-  const lastDate = new Date(year, month + 1, 0).getDate();
-
-  calendar.innerHTML = '';
-  for (let i = 0; i < firstDay; i++) {
-    const empty = document.createElement('div');
-    calendar.appendChild(empty);
+  .event-item{
+    background:var(--panel);padding:8px 12px;border-radius:8px;margin-bottom:6px;
+    display:flex;justify-content:space-between;align-items:center;
   }
 
-  for (let day = 1; day <= lastDate; day++) {
-    const dayEl = document.createElement('div');
-    dayEl.classList.add('calendar-day');
-    dayEl.textContent = day;
-    dayEl.addEventListener('click', () => openModal(`${year}-${month+1}-${day}`));
-    calendar.appendChild(dayEl);
+  @media (max-width:1200px){
+    .app{grid-template-columns:1fr 1fr; padding:12px}
+    .middle{grid-column:1 / -1}
   }
-}
-
-function openModal(date) {
-  selectedDate = date;
-  modalDate.textContent = new Date(date).toDateString();
-  eventTitle.value = '';
-  eventDesc.value = '';
-  renderEventList();
-  modal.classList.remove('hidden');
-}
-
-function closeModalFn() {
-  modal.classList.add('hidden');
-}
-
-function saveEvent() {
-  if (!events[selectedDate]) events[selectedDate] = [];
-  events[selectedDate].push({
-    title: eventTitle.value,
-    desc: eventDesc.value
-  });
-  localStorage.setItem('calendarEvents', JSON.stringify(events));
-  renderEventList();
-  eventTitle.value = '';
-  eventDesc.value = '';
-}
-
-function renderEventList() {
-  eventList.innerHTML = '';
-  if (events[selectedDate]) {
-    events[selectedDate].forEach(ev => {
-      const evDiv = document.createElement('div');
-      evDiv.innerHTML = `<strong>${ev.title}</strong><p>${ev.desc}</p>`;
-      evDiv.style.marginTop = '8px';
-      evDiv.style.padding = '6px';
-      evDiv.style.background = 'rgba(255,255,255,0.05)';
-      evDiv.style.borderRadius = '6px';
-      eventList.appendChild(evDiv);
-    });
+  @media (max-width:880px){
+    .app{grid-template-columns:1fr; padding:12px}
+    header{gap:8px}
   }
-}
 
-closeModal.addEventListener('click', closeModalFn);
-saveEventBtn.addEventListener('click', saveEvent);
+  .confetti {
+    position:relative;pointer-events:none;
+  }
+  .confetti .dot{
+    position:absolute;width:8px;height:8px;border-radius:3px;animation:pop .9s ease-out forwards;
+  }
+  @keyframes pop {
+    0% { transform: translateY(0) scale(0.2); opacity:1 }
+    100% { transform: translateY(-90px) translateX(30px) rotate(180deg) scale(1); opacity:0 }
+  }
 
-renderCalendar();
-</script>
-
-
-
+  /* modal styles that match the app aesthetic */
+  .modal {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(2,6,9,0.6);
+    z-index: 9999;
+    padding: 18px;
+  }
+  .modal.hidden { display:none; }
+  .modal-card {
+    width: min(520px, 96%);
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+    border-radius: 14px;
+    padding: 14px;
+    border: 1px solid rgba(255,255,255,0.04);
+    color: var(--text);
+    box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+  }
+  .modal-header{ display:flex;justify-content:space-between;align-items:center;gap:12px }
+  .modal-title{ font-weight:700 }
+  .modal-close{ background:transparent;border:0;color:var(--muted);cursor:pointer;font-size:20px }
+  .modal-body{ margin-top:10px; display:grid; gap:8px }
+  .modal-actions{ display:flex; gap:8px; justify-content:flex-end; margin-top:10px }
+  .modal-events{ margin-top:8px; max-height:220px; overflow:auto; padding-top:6px }
+  .modal-event-row{ display:flex; gap:8px; align-items:center; justify-content:space-between; padding:8px; border-radius:8px; background:rgba(255,255,255,0.01); }
+  .tiny-btn{ padding:6px 8px; border-radius:8px; border:0; cursor:pointer; font-size:13px }
+  .tiny-btn.ghost{ background:transparent; border:1px solid rgba(255,255,255,0.04); color:var(--text) }
+  .tiny-btn.danger{ background:#2b0a0f; color:#fff; }
 </style>
 </head>
 <body>
@@ -337,27 +266,10 @@ renderCalendar();
               <div class="calendar-grid" id="calendarGrid"></div>
             </div>
 
-            <div class="event-form" id="eventForm" style="display:none">
-              <div style="font-weight:600;margin-bottom:8px">add event for <span id="selectedDate"></span></div>
-              <div class="form-row">
-                <input type="text" id="eventTitle" placeholder="event title" />
-              </div>
-              <div class="form-row">
-                <input type="time" id="eventTime" />
-                <select id="eventCategory">
-                  <option value="school">school</option>
-                  <option value="personal">personal</option>
-                  <option value="work">work</option>
-                  <option value="social">social</option>
-                </select>
-              </div>
-              <div style="display:flex;gap:8px">
-                <button id="saveEvent" class="btn">save</button>
-                <button id="cancelEvent" class="btn secondary">cancel</button>
-              </div>
+            <div style="margin-top:12px">
+              <div class="small" style="margin-bottom:8px">upcoming events</div>
+              <div id="eventsList"></div>
             </div>
-
-            <div class="events-list" id="eventsList"></div>
           </div>
         </section>
 
@@ -423,17 +335,54 @@ renderCalendar();
     </div>
   </div>
 
+  <!-- modal for adding/viewing events -->
+  <div id="dateModal" class="modal hidden" aria-hidden="true">
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modalDateLabel">
+      <div class="modal-header">
+        <div>
+          <div class="modal-title" id="modalDateLabel">date</div>
+          <div class="small" id="modalDatePretty" style="margin-top:6px;color:var(--muted)"></div>
+        </div>
+        <button class="modal-close" id="modalCloseBtn" title="close">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <input type="text" id="modalTitle" placeholder="event / task title" />
+        <div style="display:flex;gap:8px">
+          <input type="time" id="modalTime" style="width:120px" />
+          <select id="modalCategory" style="width:140px">
+            <option value="school">school</option>
+            <option value="personal">personal</option>
+            <option value="work">work</option>
+            <option value="social">social</option>
+          </select>
+        </div>
+        <textarea id="modalDesc" rows="3" placeholder="details (optional)"></textarea>
+
+        <div class="modal-actions">
+          <button id="modalSave" class="btn">save</button>
+          <button id="modalCancel" class="btn secondary">cancel</button>
+        </div>
+
+        <div style="margin-top:10px">
+          <div class="small" style="margin-bottom:8px">events for this day</div>
+          <div class="modal-events" id="modalEventsList"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
 <script>
 /*
-  features:
-   - mood tracker (14-day history, canvas chart, localStorage)
-   - todo list with categories (localStorage, points for completing)
-   - pomodoro timer (work/break, adjustable, points for full sessions)
-   - simple shop unlocking themes (spend points)
-   - streak: log mood + complete a task each day keeps streak
-   - calendar planner (add/view/delete events by date)
+  cleaned + fixed calendar modal integration.
+  - click on calendar day -> modal opens
+  - save inside modal -> saved into state.events and persisted
+  - modal shows existing events for that date with delete buttons
+  - prev/next month navigation works
+  - upcoming events list updated
 */
 
+// ----- constants & defaults -----
 const MOODS = [
   {id:6, emoji:'😄', label:'great'},
   {id:5, emoji:'🙂', label:'good'},
@@ -448,25 +397,23 @@ const DEFAULTS = {
   points: 0,
   streak: 0,
   lastStreakDate: null,
-  moods: [], // {date: 'YYYY-MM-DD', moodId: n}
-  todos: [], // {id, text, cat, done, created}
-  events: [], // {id, date: 'YYYY-MM-DD', title, time, category, created}
+  moods: [],
+  todos: [],
+  events: [], // {id, date: 'YYYY-MM-DD', title, time, category, desc, created}
   shop: { goth:false, pastel:false, cottage:false },
   appliedTheme: null
 };
 
-// storage helpers
+// ----- storage helpers -----
 function load(){ return JSON.parse(localStorage.getItem('vibe_data')||'null') || DEFAULTS; }
 function save(state){ localStorage.setItem('vibe_data', JSON.stringify(state)); }
 
-// app state
+// ----- app state -----
 let state = load();
-
-// calendar state
 let currentCalendarDate = new Date();
-let selectedCalendarDate = null;
+let selectedCalendarDate = null; // Date object for modal
 
-// dom refs
+// ----- dom refs -----
 const moodBtns = document.getElementById('moodBtns');
 const moodCanvas = document.getElementById('moodCanvas');
 const todoList = document.getElementById('todoList');
@@ -488,24 +435,47 @@ const useThemeBtn = document.getElementById('useTheme');
 const stickersEl = document.getElementById('stickers');
 const clearMoodBtn = document.getElementById('clearMood');
 
-// calendar refs
 const calendarGrid = document.getElementById('calendarGrid');
 const calendarTitle = document.getElementById('calendarTitle');
 const prevMonth = document.getElementById('prevMonth');
 const nextMonth = document.getElementById('nextMonth');
-const eventForm = document.getElementById('eventForm');
-const selectedDateEl = document.getElementById('selectedDate');
-const eventTitle = document.getElementById('eventTitle');
-const eventTime = document.getElementById('eventTime');
-const eventCategory = document.getElementById('eventCategory');
-const saveEvent = document.getElementById('saveEvent');
-const cancelEvent = document.getElementById('cancelEvent');
+
 const eventsList = document.getElementById('eventsList');
 
-function formatDate(d){ return d.toISOString().slice(0,10); }
+// modal refs
+const dateModal = document.getElementById('dateModal');
+const modalDatePretty = document.getElementById('modalDatePretty');
+const modalCloseBtn = document.getElementById('modalCloseBtn');
+const modalSave = document.getElementById('modalSave');
+const modalCancel = document.getElementById('modalCancel');
+const modalTitle = document.getElementById('modalTitle');
+const modalTime = document.getElementById('modalTime');
+const modalCategory = document.getElementById('modalCategory');
+const modalDesc = document.getElementById('modalDesc');
+const modalEventsList = document.getElementById('modalEventsList');
 
-// init ui
+// helper: YYYY-MM-DD
+function formatDate(d){
+  if(!d) return '';
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth()+1).padStart(2,'0');
+  const dd = String(d.getDate()).padStart(2,'0');
+  return `${yyyy}-${mm}-${dd}`;
+}
+function parseDateFromYMD(s){
+  // ensure local midnight
+  return new Date(s + 'T00:00:00');
+}
+
+// ----- init UI -----
 function init(){
+  // normalize state
+  if(typeof state.points === 'undefined') state.points = 0;
+  if(!Array.isArray(state.todos)) state.todos = [];
+  if(!Array.isArray(state.events)) state.events = [];
+  if(!state.shop) state.shop = {goth:false,pastel:false,cottage:false};
+  save(state);
+
   renderMoodButtons();
   renderMoodCanvas();
   renderTodos();
@@ -518,6 +488,7 @@ function init(){
 }
 init();
 
+// ----- mood tracker -----
 function renderMoodButtons(){
   moodBtns.innerHTML = '';
   MOODS.forEach(m=>{
@@ -528,21 +499,18 @@ function renderMoodButtons(){
     moodBtns.appendChild(btn);
   });
 }
-
 function logMood(moodId){
   const today = formatDate(new Date());
-  // remove existing for today
   state.moods = state.moods.filter(m=>m.date!==today);
   state.moods.push({date:today, moodId});
-  // trim to last 30
   if(state.moods.length>60) state.moods.splice(0,state.moods.length-60);
   save(state);
   renderMoodCanvas();
   updateStreakOnMood(today);
 }
-
 function renderMoodCanvas(){
   const canvas = moodCanvas;
+  if(!canvas) return;
   const ctx = canvas.getContext('2d');
   const days = 14;
   const arr = [];
@@ -561,7 +529,7 @@ function renderMoodCanvas(){
   for(let i=0;i<days;i++){
     const val = arr[i];
     const x = pad + i*cellW;
-    const barH = val ? ( (val/5) * (h - pad*2) ) : 6;
+    const barH = val ? ( (val/6) * (h - pad*2) ) : 6;
     ctx.fillStyle = val ? 'rgba(0,191,166,0.9)' : 'rgba(255,255,255,0.04)';
     ctx.fillRect(x+6, h - pad - barH, cellW - 12, barH);
   }
@@ -569,7 +537,7 @@ function renderMoodCanvas(){
     const val = arr[i];
     const x = pad + i*cellW + cellW/2;
     if(val){
-      const y = h - pad - (val/5)*(h - pad*2) - 8;
+      const y = h - pad - (val/6)*(h - pad*2) - 8;
       ctx.beginPath();
       ctx.arc(x,y,6,0,Math.PI*2);
       ctx.fillStyle = 'var(--accent)';
@@ -577,7 +545,6 @@ function renderMoodCanvas(){
     }
   }
 }
-
 clearMoodBtn.onclick = ()=>{
   if(!confirm('clear mood history?')) return;
   state.moods = [];
@@ -585,6 +552,7 @@ clearMoodBtn.onclick = ()=>{
   renderMoodCanvas();
 };
 
+// ----- todos -----
 function renderTodos(){
   todoList.innerHTML = '';
   state.todos.sort((a,b)=> b.created - a.created);
@@ -620,7 +588,6 @@ function renderTodos(){
     todoList.appendChild(el);
   }
 }
-
 function addTask(text, cat='personal'){
   const id = Math.random().toString(36).slice(2,9);
   const task = {id, text, cat, done:false, created:Date.now()};
@@ -628,14 +595,12 @@ function addTask(text, cat='personal'){
   save(state);
   renderTodos();
 }
-
 addQuick.onclick = ()=>{
   const txt = quickTask.value.trim();
   if(!txt) return;
   addTask(txt, quickCat.value);
   quickTask.value = '';
 };
-
 function toggleTaskDone(id, el){
   const t = state.todos.find(x=>x.id===id);
   if(!t) return;
@@ -652,192 +617,13 @@ function toggleTaskDone(id, el){
   renderTodos();
 }
 
+// ----- points / profile / shop -----
 function addPoints(n){
   state.points = (state.points||0) + n;
   save(state);
   updatePointsUI();
 }
-
-function updatePointsUI(){
-  pointsEl.textContent = state.points || 0;
-}
-
-// Calendar functions
-function renderCalendar(){
-  const year = currentCalendarDate.getFullYear();
-  const month = currentCalendarDate.getMonth();
-  
-  calendarTitle.textContent = new Date(year, month).toLocaleDateString('en-US', {month:'long', year:'numeric'});
-  
-  // Clear grid
-  calendarGrid.innerHTML = '';
-  
-  // Add day headers
-  const dayHeaders = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-  dayHeaders.forEach(day => {
-    const header = document.createElement('div');
-    header.className = 'calendar-day-header';
-    header.textContent = day;
-    calendarGrid.appendChild(header);
-  });
-  
-  // Get first day of month and days in month
-  const firstDay = new Date(year, month, 1);
-  const lastDay = new Date(year, month + 1, 0);
-  const daysInMonth = lastDay.getDate();
-  const startDay = firstDay.getDay();
-  
-  // Add previous month's trailing days
-  if(startDay > 0) {
-    const prevMonthDate = new Date(year, month - 1, 0);
-    for(let i = startDay - 1; i >= 0; i--){
-      const dayNum = prevMonthDate.getDate() - i;
-      const dayEl = createCalendarDay(dayNum, true, new Date(year, month - 1, dayNum));
-      calendarGrid.appendChild(dayEl);
-    }
-  }
-  
-  // Add current month days
-  for(let day = 1; day <= daysInMonth; day++){
-    const date = new Date(year, month, day);
-    const dayEl = createCalendarDay(day, false, date);
-    calendarGrid.appendChild(dayEl);
-  }
-  
-  // Add next month's leading days to fill remaining cells
-  const cellsUsed = startDay + daysInMonth;
-  const remainingCells = Math.ceil(cellsUsed / 7) * 7 - cellsUsed;
-  for(let day = 1; day <= remainingCells; day++){
-    const dayEl = createCalendarDay(day, true, new Date(year, month + 1, day));
-    calendarGrid.appendChild(dayEl);
-  }
-}
-
-function createCalendarDay(dayNum, isOtherMonth, date){
-  const dayEl = document.createElement('div');
-  dayEl.className = 'calendar-day';
-  if(isOtherMonth) dayEl.classList.add('other-month');
-  
-  const today = new Date();
-  if(formatDate(date) === formatDate(today)) {
-    dayEl.classList.add('today');
-  }
-  
-  // Check if day has events
-  const dateStr = formatDate(date);
-  const dayEvents = state.events.filter(e => e.date === dateStr);
-  if(dayEvents.length > 0) {
-    dayEl.classList.add('has-events');
-  }
-  
-  dayEl.innerHTML = `
-    <div class="day-number">${dayNum}</div>
-    ${dayEvents.slice(0,2).map(() => '<div class="event-dot"></div>').join('')}
-  `;
-  
-  dayEl.onclick = () => selectDate(date);
-  
-  return dayEl;
-}
-
-function selectDate(date){
-  selectedCalendarDate = date;
-  const dateStr = formatDate(date);
-  selectedDateEl.textContent = date.toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'});
-  eventForm.style.display = 'block';
-  eventTitle.value = '';
-  eventTime.value = '';
-  renderDayEvents(dateStr);
-}
-
-function renderDayEvents(dateStr){
-  const dayEvents = state.events.filter(e => e.date === dateStr);
-  eventsList.innerHTML = '';
-  
-  if(dayEvents.length === 0){
-    eventsList.innerHTML = '<div class="small" style="padding:8px;text-align:center;color:var(--muted)">no events for this day</div>';
-    return;
-  }
-  
-  dayEvents.sort((a,b) => (a.time || '').localeCompare(b.time || ''));
-  
-  dayEvents.forEach(event => {
-    const eventEl = document.createElement('div');
-    eventEl.className = 'event-item';
-    eventEl.innerHTML = `
-      <div class="event-details">
-        <div class="event-title">${escapeHtml(event.title)}</div>
-        <div class="event-time">${event.time || 'all day'} • ${event.category}</div>
-      </div>
-      <div class="event-actions">
-        <button class="btn secondary delete-event" data-id="${event.id}">×</button>
-      </div>
-    `;
-    eventsList.appendChild(eventEl);
-  });
-  
-  // Add delete event listeners
-  document.querySelectorAll('.delete-event').forEach(btn => {
-    btn.onclick = () => {
-      const eventId = btn.dataset.id;
-      if(confirm('delete this event?')) {
-        state.events = state.events.filter(e => e.id !== eventId);
-        save(state);
-        renderCalendar();
-        renderDayEvents(dateStr);
-        renderUpcomingEvents();
-      }
-    };
-  });
-}
-
-function renderUpcomingEvents(){
-  // This could show next few events in a separate area if needed
-  // For now, events are shown when a day is selected
-}
-
-prevMonth.onclick = () => {
-  currentCalendarDate.setMonth(currentCalendarDate.getMonth() - 1);
-  renderCalendar();
-};
-
-nextMonth.onclick = () => {
-  currentCalendarDate.setMonth(currentCalendarDate.getMonth() + 1);
-  renderCalendar();
-};
-
-saveEvent.onclick = () => {
-  const title = eventTitle.value.trim();
-  if(!title) return;
-  
-  const event = {
-    id: Math.random().toString(36).slice(2,9),
-    date: formatDate(selectedCalendarDate),
-    title: title,
-    time: eventTime.value,
-    category: eventCategory.value,
-    created: Date.now()
-  };
-  
-  state.events.push(event);
-  save(state);
-  
-  // Award points for planning ahead
-  addPoints(5);
-  
-  eventForm.style.display = 'none';
-  renderCalendar();
-  renderUpcomingEvents();
-  
-  // Show success
-  alert('event added! +5 points for planning ahead');
-};
-
-cancelEvent.onclick = () => {
-  eventForm.style.display = 'none';
-  eventTitle.value = '';
-  eventTime.value = '';
-};
+function updatePointsUI(){ pointsEl.textContent = state.points || 0; }
 
 buyBtns.forEach(b=>{
   b.onclick = ()=>{
@@ -861,11 +647,9 @@ buyBtns.forEach(b=>{
     alert('bought! theme unlocked and applied');
   };
 });
-
 openShopBtn.onclick = ()=> {
   document.getElementById('shop').scrollIntoView({behavior:'smooth', block:'center'});
 };
-
 useThemeBtn.onclick = ()=>{
   const unlocked = Object.keys(state.shop).filter(k=>state.shop[k]);
   if(!unlocked.length){ alert('no themes unlocked yet'); return; }
@@ -875,7 +659,6 @@ useThemeBtn.onclick = ()=>{
   applyTheme(pick);
   alert('applied: ' + pick);
 };
-
 function updateProfileUI(){
   stickersEl.innerHTML = '';
   const keys = Object.keys(state.shop);
@@ -890,25 +673,15 @@ function updateProfileUI(){
   });
 }
 
-let timer = {
-  running:false,
-  mode:'work',
-  remain: null,
-  intervalId: null
-};
-
-function setTimerMinutes(mins){
-  timer.remain = mins * 60;
-  renderTimerDisplay();
-}
-
+// ----- timer -----
+let timer = { running:false, mode:'work', remain: null, intervalId: null };
+function setTimerMinutes(mins){ timer.remain = mins * 60; renderTimerDisplay(); }
 function renderTimerDisplay(){
   const mm = Math.floor(timer.remain/60).toString().padStart(2,'0');
   const ss = (timer.remain%60).toString().padStart(2,'0');
   timeDisplay.textContent = `${mm}:${ss}`;
   timerMode.textContent = timer.mode;
 }
-
 function startTimer(){
   if(timer.running) return;
   if(timer.remain===null) setTimerMinutes(parseInt(workLen.value,10)||25);
@@ -932,18 +705,13 @@ function startTimer(){
     }
   },1000);
 }
-
 function pauseTimer(){
   if(!timer.running) return;
   clearInterval(timer.intervalId);
   timer.running=false;
   startPause.textContent='start';
 }
-
-startPause.onclick = ()=>{
-  if(timer.running){ pauseTimer(); } else { startTimer(); }
-};
-
+startPause.onclick = ()=>{ if(timer.running){ pauseTimer(); } else { startTimer(); } };
 skipBtn.onclick = ()=>{
   if(timer.intervalId) clearInterval(timer.intervalId);
   timer.running=false;
@@ -951,7 +719,6 @@ skipBtn.onclick = ()=>{
   else { timer.mode='work'; setTimerMinutes(parseInt(workLen.value,10)||25); }
   renderTimerDisplay();
 };
-
 resetBtn.onclick = ()=>{
   if(timer.intervalId) clearInterval(timer.intervalId);
   timer.running=false;
@@ -959,13 +726,14 @@ resetBtn.onclick = ()=>{
   setTimerMinutes(parseInt(workLen.value,10)||25);
   startPause.textContent='start';
 };
-
 setTimerMinutes(parseInt(workLen.value,10)||25);
 
+// ----- escape helper -----
 function escapeHtml(s){
   return (s+'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
+// ----- confetti -----
 function spawnConfetti(el){
   const conf = document.createElement('div');
   conf.className='confetti';
@@ -982,12 +750,12 @@ function spawnConfetti(el){
   setTimeout(()=> conf.remove(), 900);
 }
 
+// ----- streak logic -----
 function updateStreakOnMood(today){
   if(!state.lastStreakDate) state.lastStreakDate = null;
   save(state);
   updateStreakUI();
 }
-
 function updateStreakOnTask(today){
   if(!state.moods.find(m=>m.date===today)) return;
   const last = state.lastStreakDate;
@@ -1005,11 +773,9 @@ function updateStreakOnTask(today){
   save(state);
   updateStreakUI();
 }
+function updateStreakUI(){ streakText.textContent = 'streak: ' + (state.streak || 0); }
 
-function updateStreakUI(){
-  streakText.textContent = 'streak: ' + (state.streak || 0);
-}
-
+// ----- theme -----
 function applyTheme(name){
   document.documentElement.classList.remove('theme-goth','theme-cottage','theme-pastel');
   if(!name) return;
@@ -1018,22 +784,280 @@ function applyTheme(name){
   if(name==='pastel') document.documentElement.classList.add('theme-pastel');
 }
 
-(function loadFromStorage(){
-  if(typeof state.points === 'undefined') state.points = 0;
-  if(!Array.isArray(state.todos)) state.todos = [];
-  if(!Array.isArray(state.events)) state.events = [];
-  if(!state.shop) state.shop = {goth:false,pastel:false,cottage:false};
+// ----- calendar rendering + modal integration -----
+function renderCalendar(){
+  const year = currentCalendarDate.getFullYear();
+  const month = currentCalendarDate.getMonth();
+
+  calendarTitle.textContent = new Date(year, month).toLocaleDateString('en-US', {month:'long', year:'numeric'});
+
+  calendarGrid.innerHTML = '';
+
+  // day headers
+  const dayHeaders = ['sun','mon','tue','wed','thu','fri','sat'];
+  dayHeaders.forEach(day => {
+    const header = document.createElement('div');
+    header.className = 'calendar-day-header';
+    header.textContent = day;
+    calendarGrid.appendChild(header);
+  });
+
+  const firstDay = new Date(year, month, 1);
+  const lastDay = new Date(year, month + 1, 0);
+  const daysInMonth = lastDay.getDate();
+  const startDay = firstDay.getDay();
+
+  // previous month trailing days
+  if(startDay > 0) {
+    const prevLast = new Date(year, month, 0); // last day prev month
+    const prevDays = prevLast.getDate();
+    for(let i = startDay - 1; i >= 0; i--){
+      const dayNum = prevDays - i;
+      const dateObj = new Date(year, month - 1, dayNum);
+      const dayEl = createCalendarDay(dayNum, true, dateObj);
+      calendarGrid.appendChild(dayEl);
+    }
+  }
+
+  // current month
+  for(let day = 1; day <= daysInMonth; day++){
+    const dateObj = new Date(year, month, day);
+    const dayEl = createCalendarDay(day, false, dateObj);
+    calendarGrid.appendChild(dayEl);
+  }
+
+  // next month leading days
+  const cellsUsed = startDay + daysInMonth;
+  const remainingCells = Math.ceil(cellsUsed / 7) * 7 - cellsUsed;
+  for(let day = 1; day <= remainingCells; day++){
+    const dateObj = new Date(year, month + 1, day);
+    const dayEl = createCalendarDay(day, true, dateObj);
+    calendarGrid.appendChild(dayEl);
+  }
+}
+
+function createCalendarDay(dayNum, isOtherMonth, date){
+  const dayEl = document.createElement('div');
+  dayEl.className = 'calendar-day';
+  if(isOtherMonth) dayEl.classList.add('other-month');
+
+  const today = new Date();
+  if(formatDate(date) === formatDate(today)) {
+    dayEl.classList.add('today');
+  }
+
+  const dateStr = formatDate(date);
+  const dayEvents = state.events.filter(e => e.date === dateStr);
+  if(dayEvents.length > 0) {
+    dayEl.classList.add('has-events');
+  }
+
+  dayEl.innerHTML = `
+    <div class="day-number">${dayNum}</div>
+    <div style="display:flex;flex-direction:column;align-items:center;width:100%;margin-top:6px">
+      ${dayEvents.slice(0,3).map(() => '<div class="event-dot"></div>').join('')}
+    </div>
+  `;
+
+  dayEl.onclick = () => openModalForDate(date);
+  return dayEl;
+}
+
+// open modal for a given Date object
+function openModalForDate(dateObj){
+  selectedCalendarDate = new Date(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate()); // strip time
+  const pretty = selectedCalendarDate.toLocaleDateString('en-US', {weekday:'short', month:'short', day:'numeric', year:'numeric'});
+  modalDatePretty.textContent = pretty;
+  modalTitle.value = '';
+  modalTime.value = '';
+  modalDesc.value = '';
+  modalCategory.value = 'school';
+  renderModalEvents();
+  dateModal.classList.remove('hidden');
+  dateModal.setAttribute('aria-hidden','false');
+  setTimeout(()=> modalTitle.focus(), 120);
+}
+
+// render events inside the modal for selectedCalendarDate
+function renderModalEvents(){
+  modalEventsList.innerHTML = '';
+  if(!selectedCalendarDate) return;
+  const key = formatDate(selectedCalendarDate);
+  const dayEvents = state.events.filter(e => e.date === key).sort((a,b)=>{
+    if((a.time||'') === (b.time||'')) return a.created - b.created;
+    if(!a.time) return 1;
+    if(!b.time) return -1;
+    return a.time.localeCompare(b.time);
+  });
+
+  if(dayEvents.length === 0){
+    modalEventsList.innerHTML = `<div class="small" style="padding:8px;color:var(--muted)">no events for this day</div>`;
+    return;
+  }
+
+  dayEvents.forEach(ev => {
+    const row = document.createElement('div');
+    row.className = 'modal-event-row';
+    row.innerHTML = `
+      <div style="flex:1">
+        <div style="font-weight:700">${escapeHtml(ev.title)}</div>
+        <div class="small" style="margin-top:4px">${ev.time || 'all day'} • ${escapeHtml(ev.category)}${ev.desc ? ' • ' + escapeHtml(ev.desc) : ''}</div>
+      </div>
+      <div style="display:flex;gap:6px;align-items:center">
+        <button class="tiny-btn ghost" data-id="${ev.id}" title="edit">edit</button>
+        <button class="tiny-btn danger" data-id="${ev.id}" title="delete">delete</button>
+      </div>
+    `;
+    modalEventsList.appendChild(row);
+  });
+
+  // attach edit/delete listeners
+  modalEventsList.querySelectorAll('.tiny-btn').forEach(btn=>{
+    btn.onclick = (ev)=>{
+      const id = btn.dataset.id;
+      if(btn.title === 'delete'){
+        if(!confirm('delete this event?')) return;
+        state.events = state.events.filter(x=>x.id!==id);
+        save(state);
+        renderCalendar();
+        renderModalEvents();
+        renderUpcomingEvents();
+      } else if(btn.title === 'edit'){
+        const e = state.events.find(x=>x.id===id);
+        if(!e) return;
+        // populate fields for editing: remove event, allow save to create updated
+        modalTitle.value = e.title;
+        modalTime.value = e.time || '';
+        modalCategory.value = e.category || 'school';
+        modalDesc.value = e.desc || '';
+        // remove the old one (we'll re-add on save)
+        state.events = state.events.filter(x=>x.id!==id);
+        save(state);
+        renderCalendar();
+        renderModalEvents();
+      }
+    };
+  });
+}
+
+// save from modal
+modalSave.onclick = ()=>{
+  const title = modalTitle.value.trim();
+  if(!title){
+    alert('add a title first');
+    modalTitle.focus();
+    return;
+  }
+  if(!selectedCalendarDate){
+    alert('no date selected');
+    return;
+  }
+  const ev = {
+    id: Math.random().toString(36).slice(2,9),
+    date: formatDate(selectedCalendarDate),
+    title: title,
+    time: modalTime.value || '',
+    category: modalCategory.value || 'personal',
+    desc: modalDesc.value.trim() || '',
+    created: Date.now()
+  };
+  state.events.push(ev);
+  save(state);
+  addPoints(5);
+  renderCalendar();
+  renderModalEvents();
+  renderUpcomingEvents();
+  // clear inputs (ready to add another)
+  modalTitle.value = '';
+  modalTime.value = '';
+  modalDesc.value = '';
+  modalTitle.focus();
+};
+
+// cancel / close modal
+function closeModal(){
+  dateModal.classList.add('hidden');
+  dateModal.setAttribute('aria-hidden','true');
+  selectedCalendarDate = null;
+}
+modalCancel.onclick = closeModal;
+modalCloseBtn.onclick = closeModal;
+dateModal.addEventListener('click', (e)=>{
+  if(e.target === dateModal) closeModal(); // click outside content closes
+});
+
+// keyboard: enter to save when focusing title
+modalTitle.addEventListener('keydown', (e)=>{ if(e.key === 'Enter') { e.preventDefault(); modalSave.click(); } });
+
+// prev / next month
+prevMonth.onclick = ()=> { currentCalendarDate.setMonth(currentCalendarDate.getMonth() - 1); renderCalendar(); };
+nextMonth.onclick = ()=> { currentCalendarDate.setMonth(currentCalendarDate.getMonth() + 1); renderCalendar(); };
+
+// upcoming events panel (below calendar)
+function renderUpcomingEvents(){
+  eventsList.innerHTML = '';
+  const now = new Date();
+  // find future/present events sorted ascending
+  const items = state.events
+    .slice()
+    .sort((a,b)=> {
+      if(a.date === b.date) return (a.time||'').localeCompare(b.time||'') || a.created - b.created;
+      return a.date.localeCompare(b.date);
+    })
+    .slice(0, 50);
+
+  // show next 6 upcoming (today + future)
+  const upcoming = items.filter(ev => {
+    // compare ymd strings lexicographically works
+    return ev.date >= formatDate(now);
+  }).slice(0,6);
+
+  if(upcoming.length === 0){
+    eventsList.innerHTML = `<div class="small" style="padding:8px;color:var(--muted)">no upcoming events</div>`;
+    return;
+  }
+
+  upcoming.forEach(ev=>{
+    const el = document.createElement('div');
+    el.className = 'event-item';
+    el.innerHTML = `
+      <div class="event-details">
+        <div class="event-title">${escapeHtml(ev.title)}</div>
+        <div class="event-time small">${ev.date} ${ev.time ? '• ' + ev.time : ''} • ${escapeHtml(ev.category)}</div>
+      </div>
+      <div class="event-actions">
+        <button class="btn secondary open-event" data-id="${ev.id}">open</button>
+      </div>
+    `;
+    eventsList.appendChild(el);
+  });
+
+  // open event button opens modal for that event's date
+  document.querySelectorAll('.open-event').forEach(btn=>{
+    btn.onclick = ()=>{
+      const id = btn.dataset.id;
+      const e = state.events.find(x=>x.id===id);
+      if(!e) return;
+      openModalForDate(parseDateFromYMD(e.date));
+      // focus the event list and highlight? (modal will show it)
+    };
+  });
+}
+
+// ----- misc helpers -----
+(function ensureState(){
   save(state);
 })();
 
 document.addEventListener('keydown', (e)=>{
   if(e.key==='Enter' && document.activeElement===quickTask) { addQuick.click(); }
-  if(e.key==='Enter' && document.activeElement===eventTitle) { saveEvent.click(); }
-  if(e.key==='Escape' && eventForm.style.display !== 'none') { cancelEvent.click(); }
+  if(e.key==='Escape' && dateModal && !dateModal.classList.contains('hidden')) { closeModal(); }
 });
 
+// apply theme on load if any
 if(state.appliedTheme) applyTheme(state.appliedTheme);
 
+// save state before unload
 window.addEventListener('beforeunload', ()=> save(state));
 
 </script>
