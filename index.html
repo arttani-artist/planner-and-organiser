@@ -666,4 +666,278 @@ function renderDayEvents(dateStr){
   dayEvents.forEach(event => {
     const eventEl = document.createElement('div');
     eventEl.className = 'event-item';
-    eventEl.
+    eventEl.innerHTML = `
+      <div class="event-details">
+        <div class="event-title">${escapeHtml(event.title)}</div>
+        <div class="event-time">${event.time || 'all day'} • ${event.category}</div>
+      </div>
+      <div class="event-actions">
+        <button class="btn secondary delete-event" data-id="${event.id}">×</button>
+      </div>
+    `;
+    eventsList.appendChild(eventEl);
+  });
+  
+  // Add delete event listeners
+  document.querySelectorAll('.delete-event').forEach(btn => {
+    btn.onclick = () => {
+      const eventId = btn.dataset.id;
+      if(confirm('delete this event?')) {
+        state.events = state.events.filter(e => e.id !== eventId);
+        save(state);
+        renderCalendar();
+        renderDayEvents(dateStr);
+        renderUpcomingEvents();
+      }
+    };
+  });
+}
+
+function renderUpcomingEvents(){
+  // This could show next few events in a separate area if needed
+  // For now, events are shown when a day is selected
+}
+
+prevMonth.onclick = () => {
+  currentCalendarDate.setMonth(currentCalendarDate.getMonth() - 1);
+  renderCalendar();
+};
+
+nextMonth.onclick = () => {
+  currentCalendarDate.setMonth(currentCalendarDate.getMonth() + 1);
+  renderCalendar();
+};
+
+saveEvent.onclick = () => {
+  const title = eventTitle.value.trim();
+  if(!title) return;
+  
+  const event = {
+    id: Math.random().toString(36).slice(2,9),
+    date: formatDate(selectedCalendarDate),
+    title: title,
+    time: eventTime.value,
+    category: eventCategory.value,
+    created: Date.now()
+  };
+  
+  state.events.push(event);
+  save(state);
+  
+  // Award points for planning ahead
+  addPoints(5);
+  
+  eventForm.style.display = 'none';
+  renderCalendar();
+  renderUpcomingEvents();
+  
+  // Show success
+  alert('event added! +5 points for planning ahead');
+};
+
+cancelEvent.onclick = () => {
+  eventForm.style.display = 'none';
+  eventTitle.value = '';
+  eventTime.value = '';
+};
+
+buyBtns.forEach(b=>{
+  b.onclick = ()=>{
+    const item = b.dataset.item;
+    const cost = item==='goth' ? 200 : (item==='pastel' ? 150 : 100);
+    if(state.shop[item]){
+      alert('already bought!');
+      return;
+    }
+    if(state.points < cost){
+      alert('not enough points yet!');
+      return;
+    }
+    state.points -= cost;
+    state.shop[item] = true;
+    state.appliedTheme = item;
+    save(state);
+    updatePointsUI();
+    applyTheme(item);
+    updateProfileUI();
+    alert('bought! theme unlocked and applied');
+  };
+});
+
+openShopBtn.onclick = ()=> {
+  document.getElementById('shop').scrollIntoView({behavior:'smooth', block:'center'});
+};
+
+useThemeBtn.onclick = ()=>{
+  const unlocked = Object.keys(state.shop).filter(k=>state.shop[k]);
+  if(!unlocked.length){ alert('no themes unlocked yet'); return; }
+  const pick = unlocked[0];
+  state.appliedTheme = pick;
+  save(state);
+  applyTheme(pick);
+  alert('applied: ' + pick);
+};
+
+function updateProfileUI(){
+  stickersEl.innerHTML = '';
+  const keys = Object.keys(state.shop);
+  keys.forEach(k=>{
+    if(state.shop[k]){
+      const s = document.createElement('div');
+      s.style.width='28px';s.style.height='28px';s.style.borderRadius='6px';
+      s.style.background='linear-gradient(135deg,var(--accent),var(--accent-2))';
+      s.title = k + ' theme';
+      stickersEl.appendChild(s);
+    }
+  });
+}
+
+let timer = {
+  running:false,
+  mode:'work',
+  remain: null,
+  intervalId: null
+};
+
+function setTimerMinutes(mins){
+  timer.remain = mins * 60;
+  renderTimerDisplay();
+}
+
+function renderTimerDisplay(){
+  const mm = Math.floor(timer.remain/60).toString().padStart(2,'0');
+  const ss = (timer.remain%60).toString().padStart(2,'0');
+  timeDisplay.textContent = `${mm}:${ss}`;
+  timerMode.textContent = timer.mode;
+}
+
+function startTimer(){
+  if(timer.running) return;
+  if(timer.remain===null) setTimerMinutes(parseInt(workLen.value,10)||25);
+  timer.running = true;
+  startPause.textContent = 'pause';
+  timer.intervalId = setInterval(()=>{
+    timer.remain--;
+    if(timer.remain<=0){
+      clearInterval(timer.intervalId);
+      timer.running=false;
+      startPause.textContent='start';
+      if(timer.mode==='work') {
+        addPoints(25);
+        alert('nice! you finished a work session and earned 25 points');
+      }
+      if(timer.mode==='work'){ timer.mode='break'; setTimerMinutes(parseInt(breakLen.value,10)||5); }
+      else { timer.mode='work'; setTimerMinutes(parseInt(workLen.value,10)||25); }
+      renderTimerDisplay();
+    } else {
+      renderTimerDisplay();
+    }
+  },1000);
+}
+
+function pauseTimer(){
+  if(!timer.running) return;
+  clearInterval(timer.intervalId);
+  timer.running=false;
+  startPause.textContent='start';
+}
+
+startPause.onclick = ()=>{
+  if(timer.running){ pauseTimer(); } else { startTimer(); }
+};
+
+skipBtn.onclick = ()=>{
+  if(timer.intervalId) clearInterval(timer.intervalId);
+  timer.running=false;
+  if(timer.mode==='work'){ timer.mode='break'; setTimerMinutes(parseInt(breakLen.value,10)||5); }
+  else { timer.mode='work'; setTimerMinutes(parseInt(workLen.value,10)||25); }
+  renderTimerDisplay();
+};
+
+resetBtn.onclick = ()=>{
+  if(timer.intervalId) clearInterval(timer.intervalId);
+  timer.running=false;
+  timer.mode='work';
+  setTimerMinutes(parseInt(workLen.value,10)||25);
+  startPause.textContent='start';
+};
+
+setTimerMinutes(parseInt(workLen.value,10)||25);
+
+function escapeHtml(s){
+  return (s+'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function spawnConfetti(el){
+  const conf = document.createElement('div');
+  conf.className='confetti';
+  conf.style.width='1px'; conf.style.height='1px';
+  el.appendChild(conf);
+  for(let i=0;i<6;i++){
+    const d = document.createElement('div');
+    d.className='dot';
+    d.style.left = (Math.random()*40) + 'px';
+    d.style.top = (Math.random()*10) + 'px';
+    d.style.background = ['#ffd166','#06d6a0','#ef476f','#118ab2','#ffb4a2'][Math.floor(Math.random()*5)];
+    conf.appendChild(d);
+  }
+  setTimeout(()=> conf.remove(), 900);
+}
+
+function updateStreakOnMood(today){
+  if(!state.lastStreakDate) state.lastStreakDate = null;
+  save(state);
+  updateStreakUI();
+}
+
+function updateStreakOnTask(today){
+  if(!state.moods.find(m=>m.date===today)) return;
+  const last = state.lastStreakDate;
+  if(last===null){
+    state.streak = 1;
+  } else {
+    const lastDate = new Date(last);
+    const expected = new Date(today); expected.setDate(expected.getDate()-1);
+    const expectedStr = formatDate(expected);
+    if(formatDate(lastDate) === expectedStr) state.streak = (state.streak||0) + 1;
+    else state.streak = 1;
+  }
+  state.lastStreakDate = today;
+  addPoints(10);
+  save(state);
+  updateStreakUI();
+}
+
+function updateStreakUI(){
+  streakText.textContent = 'streak: ' + (state.streak || 0);
+}
+
+function applyTheme(name){
+  document.documentElement.classList.remove('theme-goth','theme-cottage','theme-pastel');
+  if(!name) return;
+  if(name==='goth') document.documentElement.classList.add('theme-goth');
+  if(name==='cottage') document.documentElement.classList.add('theme-cottage');
+  if(name==='pastel') document.documentElement.classList.add('theme-pastel');
+}
+
+(function loadFromStorage(){
+  if(typeof state.points === 'undefined') state.points = 0;
+  if(!Array.isArray(state.todos)) state.todos = [];
+  if(!Array.isArray(state.events)) state.events = [];
+  if(!state.shop) state.shop = {goth:false,pastel:false,cottage:false};
+  save(state);
+})();
+
+document.addEventListener('keydown', (e)=>{
+  if(e.key==='Enter' && document.activeElement===quickTask) { addQuick.click(); }
+  if(e.key==='Enter' && document.activeElement===eventTitle) { saveEvent.click(); }
+  if(e.key==='Escape' && eventForm.style.display !== 'none') { cancelEvent.click(); }
+});
+
+if(state.appliedTheme) applyTheme(state.appliedTheme);
+
+window.addEventListener('beforeunload', ()=> save(state));
+
+</script>
+</body>
+</html>
