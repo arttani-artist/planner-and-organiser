@@ -114,6 +114,10 @@
   .calendar-nav{
     background:transparent;border:1px solid rgba(255,255,255,0.06);
     padding:6px 10px;border-radius:8px;cursor:pointer;color:var(--text);
+    font-size:16px;font-weight:600;
+  }
+  .calendar-nav:hover{
+    background:rgba(255,255,255,0.05);
   }
   .calendar-grid{
     display:grid;grid-template-columns:repeat(7,1fr);gap:2px;
@@ -123,7 +127,8 @@
   }
   .calendar-day{
     aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
-    border-radius:6px;cursor:pointer;position:relative;min-height:35px;
+    border-radius:6px;cursor:pointer;position:relative;min-height:40px;
+    transition:background-color 0.2s ease;
   }
   .calendar-day:hover{background:rgba(255,255,255,0.03)}
   .calendar-day.today{background:var(--accent);color:#fff}
@@ -572,7 +577,7 @@ function renderCalendar(){
   const year = currentCalendarDate.getFullYear();
   const month = currentCalendarDate.getMonth();
   
-  calendarTitle.textContent = new Date(year, month).toLocaleDateString('en', {month:'long', year:'numeric'});
+  calendarTitle.textContent = new Date(year, month).toLocaleDateString('en-US', {month:'long', year:'numeric'});
   
   // Clear grid
   calendarGrid.innerHTML = '';
@@ -593,11 +598,13 @@ function renderCalendar(){
   const startDay = firstDay.getDay();
   
   // Add previous month's trailing days
-  const prevMonth = new Date(year, month - 1, 0);
-  for(let i = startDay - 1; i >= 0; i--){
-    const dayNum = prevMonth.getDate() - i;
-    const dayEl = createCalendarDay(dayNum, true, new Date(year, month - 1, dayNum));
-    calendarGrid.appendChild(dayEl);
+  if(startDay > 0) {
+    const prevMonthDate = new Date(year, month - 1, 0);
+    for(let i = startDay - 1; i >= 0; i--){
+      const dayNum = prevMonthDate.getDate() - i;
+      const dayEl = createCalendarDay(dayNum, true, new Date(year, month - 1, dayNum));
+      calendarGrid.appendChild(dayEl);
+    }
   }
   
   // Add current month days
@@ -607,8 +614,9 @@ function renderCalendar(){
     calendarGrid.appendChild(dayEl);
   }
   
-  // Add next month's leading days
-  const remainingCells = 42 - (startDay + daysInMonth);
+  // Add next month's leading days to fill remaining cells
+  const cellsUsed = startDay + daysInMonth;
+  const remainingCells = Math.ceil(cellsUsed / 7) * 7 - cellsUsed;
   for(let day = 1; day <= remainingCells; day++){
     const dayEl = createCalendarDay(day, true, new Date(year, month + 1, day));
     calendarGrid.appendChild(dayEl);
@@ -645,7 +653,7 @@ function createCalendarDay(dayNum, isOtherMonth, date){
 function selectDate(date){
   selectedCalendarDate = date;
   const dateStr = formatDate(date);
-  selectedDateEl.textContent = date.toLocaleDateString('en', {month:'short', day:'numeric', year:'numeric'});
+  selectedDateEl.textContent = date.toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'});
   eventForm.style.display = 'block';
   eventTitle.value = '';
   eventTime.value = '';
